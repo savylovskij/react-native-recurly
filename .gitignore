@@ -26,6 +26,9 @@ npm-debug.*
 yarn-debug.*
 yarn-error.*
 
+# IDE
+.idea/
+
 # macOS
 .DS_Store
 *.pem
@@ -41,4 +44,3 @@ app-example
 # generated native folders
 /ios
 /android
-/nativewind-env.d.ts
