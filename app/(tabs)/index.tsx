@@ -29,7 +29,7 @@ export default function App() {
               pathname: "/subscriptions/[id]",
               params: { id: "claude" },
              }}>Claude Max Subscription
-            </ Link>
+            </Link>
         </SafeAreaView>
     );
 }
