@@ -1,62 +1,64 @@
-import {Tabs} from "expo-router";
-import clsx from "clsx";
-import { View, Image } from "react-native";
-import {tabs} from "@/constants/data";
-import {colors, components} from "@/constants/theme";
-import {useSafeAreaInsets} from "react-native-safe-area-context";
+import { Tabs } from 'expo-router';
+import clsx from 'clsx';
+import { View, Image } from 'react-native';
+import { tabs } from '@/constants/data';
+import { colors, components } from '@/constants/theme';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-const tabBar =  components.tabBar;
+const tabBar = components.tabBar;
 
 const TabLayout = () => {
-    const insets = useSafeAreaInsets();
+  const insets = useSafeAreaInsets();
 
-    const TabIcon = ({focused, icon}: TabIconProps) => {
-        return (
-            <View className="tabs-icon">
-                <View className={clsx('tabs-pill', focused && 'tabs-active')}>
-                    <Image source={icon} resizeMode="contain" alt="Image" className='tabs-glyph' />
-                </View>
-            </View>
-        )
-    }
-
+  const TabIcon = ({ focused, icon }: TabIconProps) => {
     return (
-        <Tabs screenOptions={{
-            headerShown: false,
-            tabBarShowLabel: false,
-            tabBarStyle: {
-                position: "absolute",
-                bottom: Math.max(insets.bottom, tabBar.horizontalInset),
-                height: tabBar.height,
-                marginHorizontal: tabBar.horizontalInset,
-                borderRadius: tabBar.radius,
-                backgroundColor: colors.primary,
-                borderTopWidth: 0,
-                elevation: 0
-            },
-            tabBarItemStyle: {
-                paddingVertical: tabBar.height / 2 - tabBar.iconFrame / 1.6
-            },
-            tabBarIconStyle: {
-                height: tabBar.iconFrame,
-                width: tabBar.iconFrame,
-                alignItems: "center",
-            }
-        }}>
-            {tabs.map((tab, index) => (
-                <Tabs.Screen
-                    key={index}
-                    name={tab.name}
-                    options={{
-                        title: tab.title,
-                        tabBarIcon: ({focused}) => {
-                            return <TabIcon focused={focused} icon={tab.icon}/>
-                        }
-                }}
-                />
-            ))}
-        </Tabs>
-    )
-}
+      <View className="tabs-icon">
+        <View className={clsx('tabs-pill', focused && 'tabs-active')}>
+          <Image source={icon} resizeMode="contain" alt="Image" className="tabs-glyph" />
+        </View>
+      </View>
+    );
+  };
 
-export default TabLayout
+  return (
+    <Tabs
+      screenOptions={{
+        headerShown: false,
+        tabBarShowLabel: false,
+        tabBarStyle: {
+          position: 'absolute',
+          bottom: Math.max(insets.bottom, tabBar.horizontalInset),
+          height: tabBar.height,
+          marginHorizontal: tabBar.horizontalInset,
+          borderRadius: tabBar.radius,
+          backgroundColor: colors.primary,
+          borderTopWidth: 0,
+          elevation: 0,
+        },
+        tabBarItemStyle: {
+          paddingVertical: tabBar.height / 2 - tabBar.iconFrame / 1.6,
+        },
+        tabBarIconStyle: {
+          height: tabBar.iconFrame,
+          width: tabBar.iconFrame,
+          alignItems: 'center',
+        },
+      }}
+    >
+      {tabs.map((tab, index) => (
+        <Tabs.Screen
+          key={index}
+          name={tab.name}
+          options={{
+            title: tab.title,
+            tabBarIcon: ({ focused }) => {
+              return <TabIcon focused={focused} icon={tab.icon} />;
+            },
+          }}
+        />
+      ))}
+    </Tabs>
+  );
+};
+
+export default TabLayout;
