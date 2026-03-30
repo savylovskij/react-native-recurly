@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router';
-import clsx from 'clsx';
+import { clsx } from 'clsx';
 import { View, Image } from 'react-native';
 import { tabs } from '@/constants/data';
 import { colors, components } from '@/constants/theme';
