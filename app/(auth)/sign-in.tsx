@@ -64,9 +64,20 @@ export default function SignIn() {
         return;
       }
 
+      if (signIn.status === 'needs_second_factor') {
+        setErrors({ general: 'Two-factor authentication is required but not yet supported.' });
+        return;
+      }
+
+      if (signIn.status === 'needs_client_trust') {
+        setErrors({ general: 'Additional verification is required. Please try again later.' });
+        return;
+      }
+
       if (signIn.status === 'complete') {
         await signIn.finalize({
-          navigate: ({ decorateUrl }) => {
+          navigate: ({ session, decorateUrl }) => {
+            if (session?.currentTask) return;
             const url = decorateUrl('/');
             router.replace(url as any);
           },

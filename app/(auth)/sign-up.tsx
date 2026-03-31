@@ -237,7 +237,7 @@ export default function SignUp() {
 
               <View className="auth-link-row">
                 <Text className="auth-link-copy">Wrong email?</Text>
-                <Pressable onPress={() => { setPendingVerification(false); setCode(''); setErrors({}); }}>
+                <Pressable onPress={async () => { await signUp.reset(); setErrors({}); setCode(''); setPendingVerification(false); }}>
                   <Text className="auth-link">Go back</Text>
                 </Pressable>
               </View>
