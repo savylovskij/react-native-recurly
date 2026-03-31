@@ -16,11 +16,18 @@ import dayjs from 'dayjs';
 import ListHeading from '@/components/ListHeading';
 import UpcomingSubscriptionCard from '@/components/UpcomingSubscriptionCard';
 import SubscriptionCard from '@/components/SubscriptionCard';
+import { useUser } from '@clerk/expo';
 
 const SafeAreaView = styled(RNSafeAreaView);
 
 export default function App() {
+  const { user } = useUser();
+
   const [expandedSubscriptionId, setExpandedSubscriptionId] = useState<string | null>(null);
+
+  // Get user display name: firstName, fullName, or email
+  const displayName =
+    user?.firstName || user?.fullName || user?.emailAddresses[0]?.emailAddress || 'User';
 
   return (
     <SafeAreaView className="flex-1 bg-background p-5">
@@ -29,8 +36,11 @@ export default function App() {
           <>
             <View className="home-header">
               <View className="home-user">
-                <Image source={images.avatar} className="home-avatar" />
-                <Text className="home-user-name">{HOME_USER.name}</Text>
+                <Image
+                  source={user?.imageUrl ? { uri: user.imageUrl } : images.avatar}
+                  className="home-avatar"
+                />
+                <Text className="home-user-name">{displayName}</Text>
               </View>
 
               <Image source={icons.add} className="home-add-icon" />
