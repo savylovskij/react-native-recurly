@@ -1,21 +1,18 @@
 import '@/global.css';
-import { View, Image, Text, FlatList } from 'react-native';
+import { View, Image, Text, FlatList, Pressable } from 'react-native';
 import { useState } from 'react';
 import { SafeAreaView as RNSafeAreaView } from 'react-native-safe-area-context';
 import { styled } from 'react-native-css';
 import images from '@/constants/images';
-import {
-  HOME_BALANCE,
-  HOME_USER,
-  UPCOMING_SUBSCRIPTIONS,
-  HOME_SUBSCRIPTIONS,
-} from '@/constants/data';
+import { HOME_BALANCE, UPCOMING_SUBSCRIPTIONS } from '@/constants/data';
 import { icons } from '@/constants/icons';
 import { formatCurrency } from '@/lib/utils';
 import dayjs from 'dayjs';
 import ListHeading from '@/components/ListHeading';
 import UpcomingSubscriptionCard from '@/components/UpcomingSubscriptionCard';
 import SubscriptionCard from '@/components/SubscriptionCard';
+import CreateSubscriptionModal from '@/components/CreateSubscriptionModal';
+import { useSubscriptions } from '@/contexts/SubscriptionsContext';
 import { useUser } from '@clerk/expo';
 import { usePostHog } from 'posthog-react-native';
 
@@ -25,7 +22,9 @@ export default function App() {
   const { user } = useUser();
   const posthog = usePostHog();
 
+  const { subscriptions, addSubscription } = useSubscriptions();
   const [expandedSubscriptionId, setExpandedSubscriptionId] = useState<string | null>(null);
+  const [modalVisible, setModalVisible] = useState(false);
 
   // Get user display name: firstName, fullName, or email
   const displayName =
@@ -45,7 +44,9 @@ export default function App() {
                 <Text className="home-user-name">{displayName}</Text>
               </View>
 
-              <Image source={icons.add} className="home-add-icon" />
+              <Pressable onPress={() => setModalVisible(true)}>
+                <Image source={icons.add} className="home-add-icon" />
+              </Pressable>
             </View>
 
             <View className="home-balance-card">
@@ -77,7 +78,7 @@ export default function App() {
             <ListHeading title="All subscriptions" />
           </>
         )}
-        data={HOME_SUBSCRIPTIONS}
+        data={subscriptions}
         renderItem={({ item }) => (
           <SubscriptionCard
             {...item}
@@ -102,6 +103,12 @@ export default function App() {
         ItemSeparatorComponent={() => <View className="h-4" />}
         showsVerticalScrollIndicator={false}
         contentContainerClassName="pb-30"
+      />
+
+      <CreateSubscriptionModal
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        onSubmit={addSubscription}
       />
     </SafeAreaView>
   );

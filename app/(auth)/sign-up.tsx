@@ -128,7 +128,7 @@ export default function SignUp() {
             const userEmail = session?.user?.emailAddresses?.[0]?.emailAddress;
             if (userId) {
               posthog.identify(userId, {
-                $set: { email: userEmail },
+                $set: { email: userEmail ?? null },
                 $set_once: { signup_date: new Date().toISOString() },
               });
             }

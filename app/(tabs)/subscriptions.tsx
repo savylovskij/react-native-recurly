@@ -3,11 +3,12 @@ import { View, Text, TextInput, FlatList } from 'react-native';
 import { SafeAreaView as RNSafeAreaView } from 'react-native-safe-area-context';
 import { styled } from 'react-native-css';
 import SubscriptionCard from '@/components/SubscriptionCard';
-import { HOME_SUBSCRIPTIONS } from '@/constants/data';
+import { useSubscriptions } from '@/contexts/SubscriptionsContext';
 
 const SafeAreaView = styled(RNSafeAreaView);
 
 const Subscriptions = () => {
+  const { subscriptions } = useSubscriptions();
   const [search, setSearch] = useState('');
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
@@ -15,10 +16,10 @@ const Subscriptions = () => {
 
   const filtered = (() => {
     if (!searchQuery) {
-      return HOME_SUBSCRIPTIONS;
+      return subscriptions;
     }
 
-    return HOME_SUBSCRIPTIONS.filter(
+    return subscriptions.filter(
       (sub) =>
         sub.name.toLowerCase().includes(searchQuery) ||
         sub.category?.toLowerCase().includes(searchQuery) ||
