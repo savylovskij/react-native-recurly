@@ -12,6 +12,7 @@ import {
 import { clsx } from 'clsx';
 import dayjs from 'dayjs';
 import { icons } from '@/constants/icons';
+import { posthog } from '@/lib/posthog';
 
 interface CreateSubscriptionModalProps {
   visible: boolean;
@@ -83,6 +84,14 @@ const CreateSubscriptionModal = ({ visible, onClose, onSubmit }: CreateSubscript
     };
 
     onSubmit(subscription);
+
+    posthog.capture('subscription_created', {
+      subscription_name: name.trim(),
+      subscription_price: parsedPrice,
+      subscription_frequency: frequency,
+      subscription_category: category,
+    });
+
     resetForm();
     onClose();
   };
@@ -131,26 +140,32 @@ const CreateSubscriptionModal = ({ visible, onClose, onSubmit }: CreateSubscript
                 <Text className="auth-label">Frequency</Text>
                 <View className="picker-row">
                   <Pressable
-                    className={clsx('picker-option', frequency === 'Monthly' && 'picker-option-active')}
+                    className={clsx(
+                      'picker-option',
+                      frequency === 'Monthly' && 'picker-option-active',
+                    )}
                     onPress={() => setFrequency('Monthly')}
                   >
                     <Text
                       className={clsx(
                         'picker-option-text',
-                        frequency === 'Monthly' && 'picker-option-text-active'
+                        frequency === 'Monthly' && 'picker-option-text-active',
                       )}
                     >
                       Monthly
                     </Text>
                   </Pressable>
                   <Pressable
-                    className={clsx('picker-option', frequency === 'Yearly' && 'picker-option-active')}
+                    className={clsx(
+                      'picker-option',
+                      frequency === 'Yearly' && 'picker-option-active',
+                    )}
                     onPress={() => setFrequency('Yearly')}
                   >
                     <Text
                       className={clsx(
                         'picker-option-text',
-                        frequency === 'Yearly' && 'picker-option-text-active'
+                        frequency === 'Yearly' && 'picker-option-text-active',
                       )}
                     >
                       Yearly
@@ -171,7 +186,7 @@ const CreateSubscriptionModal = ({ visible, onClose, onSubmit }: CreateSubscript
                       <Text
                         className={clsx(
                           'category-chip-text',
-                          category === cat && 'category-chip-text-active'
+                          category === cat && 'category-chip-text-active',
                         )}
                       >
                         {cat}
