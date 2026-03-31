@@ -17,11 +17,13 @@ import ListHeading from '@/components/ListHeading';
 import UpcomingSubscriptionCard from '@/components/UpcomingSubscriptionCard';
 import SubscriptionCard from '@/components/SubscriptionCard';
 import { useUser } from '@clerk/expo';
+import { usePostHog } from 'posthog-react-native';
 
 const SafeAreaView = styled(RNSafeAreaView);
 
 export default function App() {
   const { user } = useUser();
+  const posthog = usePostHog();
 
   const [expandedSubscriptionId, setExpandedSubscriptionId] = useState<string | null>(null);
 
@@ -82,6 +84,13 @@ export default function App() {
             expanded={expandedSubscriptionId === item.id}
             onPress={() =>
               setExpandedSubscriptionId((currentId) => {
+                const isExpanding = currentId !== item.id;
+                if (isExpanding) {
+                  posthog.capture('subscription_card_expanded', {
+                    subscription_id: item.id,
+                    subscription_name: item.name,
+                  });
+                }
                 return currentId === item.id ? null : item.id;
               })
             }

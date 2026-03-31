@@ -3,12 +3,14 @@ import { SafeAreaView as RNSafeAreaView } from 'react-native-safe-area-context';
 import { styled } from 'react-native-css';
 import { useAuth, useUser } from '@clerk/expo';
 import images from '@/constants/images';
+import { usePostHog } from 'posthog-react-native';
 
 const SafeAreaView = styled(RNSafeAreaView);
 
 const Settings = () => {
   const { signOut } = useAuth();
   const { user } = useUser();
+  const posthog = usePostHog();
 
   const displayName =
     user?.firstName || user?.fullName || user?.emailAddresses[0]?.emailAddress || 'User';
@@ -17,7 +19,15 @@ const Settings = () => {
   const handleSignOut = () => {
     Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
       { text: 'Cancel', style: 'cancel' },
-      { text: 'Sign Out', style: 'destructive', onPress: () => signOut() },
+      {
+        text: 'Sign Out',
+        style: 'destructive',
+        onPress: () => {
+          posthog.capture('user_signed_out');
+          posthog.reset();
+          signOut();
+        },
+      },
     ]);
   };
 

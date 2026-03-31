@@ -15,12 +15,14 @@ import { SafeAreaView as RNSafeAreaView } from 'react-native-safe-area-context';
 import { styled } from 'react-native-css';
 import { clsx } from 'clsx';
 import { mapSignInError } from '@/lib/utils';
+import { usePostHog } from 'posthog-react-native';
 
 const SafeAreaView = styled(RNSafeAreaView);
 
 export default function SignIn() {
   const { signIn, fetchStatus } = useSignIn();
   const router = useRouter();
+  const posthog = usePostHog();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -61,6 +63,7 @@ export default function SignIn() {
 
       if (error) {
         setErrors(mapSignInError(error));
+        posthog.capture('sign_in_failed', { error_code: error.code, error_message: error.message });
         return;
       }
 
@@ -78,6 +81,12 @@ export default function SignIn() {
         await signIn.finalize({
           navigate: ({ session, decorateUrl }) => {
             if (session?.currentTask) return;
+            const userId = session?.user?.id;
+            const userEmail = session?.user?.emailAddresses?.[0]?.emailAddress;
+            if (userId) {
+              posthog.identify(userId, { $set: { email: userEmail } });
+            }
+            posthog.capture('user_signed_in', { method: 'password' });
             const url = decorateUrl('/');
             router.replace(url as any);
           },
@@ -87,8 +96,13 @@ export default function SignIn() {
       const clerkError = err?.errors?.[0];
       if (clerkError) {
         setErrors({ general: clerkError.longMessage || clerkError.message });
+        posthog.capture('sign_in_failed', {
+          error_code: clerkError.code,
+          error_message: clerkError.message,
+        });
       } else {
         setErrors({ general: 'Something went wrong. Please try again.' });
+        posthog.capture('sign_in_failed', { error_message: 'unknown_error' });
       }
     }
   };

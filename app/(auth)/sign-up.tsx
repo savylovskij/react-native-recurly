@@ -15,12 +15,14 @@ import { SafeAreaView as RNSafeAreaView } from 'react-native-safe-area-context';
 import { styled } from 'react-native-css';
 import { clsx } from 'clsx';
 import { mapSignUpError } from '@/lib/utils';
+import { usePostHog } from 'posthog-react-native';
 
 const SafeAreaView = styled(RNSafeAreaView);
 
 export default function SignUp() {
   const { signUp, fetchStatus } = useSignUp();
   const router = useRouter();
+  const posthog = usePostHog();
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -81,17 +83,24 @@ export default function SignUp() {
 
       if (error) {
         setErrors(mapSignUpError(error));
+        posthog.capture('sign_up_failed', { error_code: error.code, error_message: error.message });
         return;
       }
 
       await signUp.verifications.sendEmailCode();
+      posthog.capture('email_verification_sent', { email: email.trim() });
       setPendingVerification(true);
     } catch (err: any) {
       const clerkError = err?.errors?.[0];
       if (clerkError) {
         setErrors({ general: clerkError.longMessage || clerkError.message });
+        posthog.capture('sign_up_failed', {
+          error_code: clerkError.code,
+          error_message: clerkError.message,
+        });
       } else {
         setErrors({ general: 'Something went wrong. Please try again.' });
+        posthog.capture('sign_up_failed', { error_message: 'unknown_error' });
       }
     }
   };
@@ -114,7 +123,16 @@ export default function SignUp() {
 
       if (signUp.status === 'complete') {
         await signUp.finalize({
-          navigate: ({ decorateUrl }) => {
+          navigate: ({ session, decorateUrl }) => {
+            const userId = session?.user?.id;
+            const userEmail = session?.user?.emailAddresses?.[0]?.emailAddress;
+            if (userId) {
+              posthog.identify(userId, {
+                $set: { email: userEmail },
+                $set_once: { signup_date: new Date().toISOString() },
+              });
+            }
+            posthog.capture('user_signed_up', { method: 'password' });
             const url = decorateUrl('/');
             router.replace(url as any);
           },
@@ -133,8 +151,10 @@ export default function SignUp() {
         } else {
           setErrors({ general: clerkError.longMessage || clerkError.message });
         }
+        posthog.capture('email_verification_failed', { error_code: errCode ?? clerkError.code });
       } else {
         setErrors({ general: 'Verification failed. Please try again.' });
+        posthog.capture('email_verification_failed', { error_message: 'unknown_error' });
       }
     }
   };
@@ -143,6 +163,7 @@ export default function SignUp() {
     setErrors({});
     try {
       await signUp.verifications.sendEmailCode();
+      posthog.capture('verification_code_resent', { email: email.trim() });
     } catch {
       setErrors({ general: 'Could not resend code. Please try again.' });
     }
@@ -174,9 +195,7 @@ export default function SignUp() {
               </View>
 
               <Text className="auth-title">Check your email</Text>
-              <Text className="auth-subtitle">
-                We sent a 6-digit code to {email.trim()}
-              </Text>
+              <Text className="auth-subtitle">We sent a 6-digit code to {email.trim()}</Text>
             </View>
 
             <View className="auth-card">
@@ -237,7 +256,14 @@ export default function SignUp() {
 
               <View className="auth-link-row">
                 <Text className="auth-link-copy">Wrong email?</Text>
-                <Pressable onPress={async () => { await signUp.reset(); setErrors({}); setCode(''); setPendingVerification(false); }}>
+                <Pressable
+                  onPress={async () => {
+                    await signUp.reset();
+                    setErrors({});
+                    setCode('');
+                    setPendingVerification(false);
+                  }}
+                >
                   <Text className="auth-link">Go back</Text>
                 </Pressable>
               </View>
