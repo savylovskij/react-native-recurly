@@ -84,7 +84,7 @@ export default function SignIn() {
             const userId = session?.user?.id;
             const userEmail = session?.user?.emailAddresses?.[0]?.emailAddress;
             if (userId) {
-              posthog.identify(userId, { $set: { email: userEmail } });
+              posthog.identify(userId, { email: userEmail ?? '' });
             }
             posthog.capture('user_signed_in', { method: 'password' });
             const url = decorateUrl('/');
